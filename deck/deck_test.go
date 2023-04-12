@@ -5,15 +5,15 @@ import "testing"
 
 
 func TestGenerateDeck(t *testing.T) {
-	dck := generateDeck()
+	dck := GenerateDeck()
 	if(len(dck) != 52){
 		t.Errorf("Expected 52 got %d" , len(dck))
 	}
 }
 func TestHandSize(t *testing.T) {
-	dck := generateDeck()
+	dck := GenerateDeck()
 	handSize := 7
-	hand := dck.deal(7);
+	hand := dck.Deal(7);
 
 	if(len(hand) != handSize){
 		t.Errorf("Expected %d got %d" ,handSize  , len(hand))
@@ -21,9 +21,9 @@ func TestHandSize(t *testing.T) {
 }
 
 func TestRemainingDeckSize(t *testing.T){
-	dck := generateDeck()
+	dck := GenerateDeck()
 	handSize := 7
-	hand := dck.deal(7);
+	hand := dck.Deal(7);
 
 	if(len(dck) != 52 - len(hand)){
 		t.Errorf("Expected %d got %d" , 52 - handSize  , len(dck))
@@ -31,9 +31,9 @@ func TestRemainingDeckSize(t *testing.T){
 }
 
 func TestShuffleDeck(t *testing.T){
-	dck1 := generateDeck()
-	dck2 := generateDeck();
-	dck2.shuffle(100);
+	dck1 := GenerateDeck()
+	dck2 := GenerateDeck();
+	dck2.Shuffle(100);
 	differences := 0;
 
 	for i , card := range dck1{
