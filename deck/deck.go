@@ -7,67 +7,78 @@ import (
 	"os"
 )
 
+func getCardSuits() [4]string {
+	return [4]string{"Diamonds" , "Spades" , "Hearts" , "Clubs"}
+}
+
+func getCardValues() [4]string {
+	return [4]string{"Diamonds" , "Spades" , "Hearts" , "Clubs"}
+}
+
+
 type card struct {
 	Suit  string `json:"suit"`
 	Value string `json:"value"`
-}	
-type deck []card
+}
 
-var suits = [4]string{"Diamonds" , "Spades" , "Hearts" , "Clubs"}
-var values = [13]string{"Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten" , "King", "Jack", "Queen"}	
+type cardList []card
 
 
-func GenerateDeck() deck {
-	dck := deck{}
+type deck struct{
+	cards cardList
+}
+
+func NewDeck() *deck {
+	dck := &deck{}
+	suits := getCardSuits()
+	values := getCardValues()
 	for _, suit := range suits{
 		for _, value := range values{
-			dck = append(dck, card{suit , value})
+			(*dck).cards = append((*dck).cards, card{suit , value})
 		}
 	}
 	return dck
 }
 
+
+
 func (dck deck) List() {
-	for _, card := range dck {
+	for _, card := range dck.cards {
 		fmt.Println(card.Suit + " of " + card.Value)
 	
 	}
 	fmt.Println("---------------");
 }
 
-func getRandomNumbers(upperBound int , isEqualAllowed bool ) [2]int {
-	randNums := [2]int{rand.Intn(upperBound) , rand.Intn(upperBound)}
-	if (isEqualAllowed ||randNums[0] != randNums[1] ){
-		return randNums
-	}
-	
-	return getRandomNumbers(upperBound ,  isEqualAllowed)	
+func (dck deck) Count() {
+	fmt.Println(len(dck.cards))
 }
+
 func (dck deck) Shuffle(rounds int) {
-	dckLen := len(dck)
+	
+	dckLen := len(dck.cards)
 	i := 1
 	for i <= rounds {
 		randIndxs := getRandomNumbers(dckLen , false);
-		dck[randIndxs[0]] , dck[randIndxs[1]] = dck[randIndxs[1]] , dck[randIndxs[0]]
+		dck.Swap(randIndxs[0] , randIndxs[1])
 		i = i + 1;
 	}
 }
-
-func (dck *deck) Deal(handSize int) deck {
-	hand := (*dck)[:handSize]
+func (dck *deck) Deal(handSize int) []card  {
+	hand := (*dck).cards[:handSize]
 	// here i need to send by reference as i want to change the value of the deck instance itself 
-	*dck = (*dck)[handSize:]
+	dck.cards = (*dck).cards[handSize:]
 	return hand
 } 
-
-
-func (dck deck) stringify() []byte {
-	jsonDeck , err := json.Marshal(dck)
-	if (err != nil){
-		panic(err)
-	}
-	return jsonDeck
+func (dck deck) Swap(i int , j int ){
+	dck.cards[i] , dck.cards[j] = dck.cards[j] , dck.cards[i]
 }
+
+
+
+
+
+// --------------------------------------------------
 
 func Parse(stringifiedDeck []byte) deck{
 	var dck deck ;
@@ -77,18 +88,35 @@ func Parse(stringifiedDeck []byte) deck{
 	}
 	return dck
 }
-func (dck deck) SaveToFile(filename string){
-	stringDeck := dck.stringify()
-	err := os.WriteFile(filename , stringDeck , 0644)
+func SaveToFile(filename string , bs []byte ){
+	err := os.WriteFile(filename , bs , 0644)
 	if (err != nil){
 		panic(err)
 	}
 }
-func ReadFromFile(filename string) deck {
-
+func ReadFromFile(filename string) []byte {
 	stringifiedText , err := os.ReadFile(filename)
 	if (err != nil){
 		panic(err)
 	}
-	return Parse(stringifiedText)
+	return stringifiedText
 }
+
+func getRandomNumbers(upperBound int , isEqualAllowed bool ) [2]int {
+	randNums := [2]int{rand.Intn(upperBound) , rand.Intn(upperBound)}
+	if (isEqualAllowed ||randNums[0] != randNums[1] ){
+		return randNums
+	}	
+	
+	return getRandomNumbers(upperBound ,  isEqualAllowed)	
+}	
+
+
+func stringify(v any) []byte {
+	bs , err := json.Marshal(v)
+	if (err != nil){
+		panic(err)
+	}
+	return bs
+}
+// --------------------------------------------------
